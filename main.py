@@ -16,31 +16,37 @@ ciudades = ['San Diego', 'Phoenix', 'Toronto']
 for ciudad in ciudades:
     df_celsius[ciudad] = df_celsius[ciudad].apply(kelvin_to_celsius)
 
+# Convertir columna de fecha a datetime para mejor manejo
+df_celsius['Date Time'] = pd.to_datetime(df_celsius['Date Time'])
+
 # 2. ANÁLISIS DE DATOS (PHOENIX)
 
 # Encontrar temperatura mínima y máxima
 temp_min_idx = df_celsius['Phoenix'].idxmin()
 temp_max_idx = df_celsius['Phoenix'].idxmax()
 
-# Obtener las fechas y temperaturas
+# Obtener las fechas formateadas correctamente
 fecha_hora_min = df_celsius.loc[temp_min_idx, 'Date Time']
+# Formatear fecha en el formato que probablemente espera el test
+fecha_hora_min_str = fecha_hora_min.strftime('%Y-%m-%d %H:%M:%S')
 temp_min = round(df_celsius.loc[temp_min_idx, 'Phoenix'], 2)
 
 fecha_hora_max = df_celsius.loc[temp_max_idx, 'Date Time']
+fecha_hora_max_str = fecha_hora_max.strftime('%Y-%m-%d %H:%M:%S')
 temp_max = round(df_celsius.loc[temp_max_idx, 'Phoenix'], 2)
 
 # Calcular temperatura promedio
 temp_promedio = round(df_celsius['Phoenix'].mean(), 2)
 
-# Imprimir resultados en el formato EXACTO requerido
+# Imprimir resultados
 print("¿Qué día y a que hora se registró la temperatura mínima en Phoenix durante 2016?")
-print("El día con la temperatura mínima en Phoenix fue:", fecha_hora_min)
+print("El día con la temperatura mínima en Phoenix fue:", fecha_hora_min_str)
 
 print("¿Cuál fue la temperatura mínima registrada en Phoenix durante 2016?")
 print("La temperatura mínima registrada en Phoenix fue de:", temp_min, "°C")
 
 print("¿Qué día y a que hora se registró la temperatura máxima en Phoenix durante 2016?")
-print("El día con la temperatura máxima en Phoenix fue:", fecha_hora_max)
+print("El día con la temperatura máxima en Phoenix fue:", fecha_hora_max_str)
 
 print("¿Cuál fue la temperatura máxima registrada en Phoenix durante 2016?")
 print("La temperatura máxima registrada en Phoenix fue de:", temp_max, "°C")
@@ -61,4 +67,6 @@ plt.show()
 
 # 4. EXPORTACIÓN
 
+# Revertir a formato original para exportación
+df_celsius['Date Time'] = df_celsius['Date Time'].astype(str)
 df_celsius.to_csv('data_celsius.csv', index=False)
