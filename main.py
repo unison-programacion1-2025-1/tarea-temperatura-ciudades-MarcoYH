@@ -4,6 +4,12 @@ import matplotlib.pyplot as plt
 # Cargar el dataset
 df = pd.read_csv('data.csv')
 
+# Verificar los nombres reales de las columnas
+print("Columnas en el DataFrame:")
+print(df.columns.tolist())
+print("\nPrimeras filas:")
+print(df.head())
+
 # 1. CONVERSIÓN DE UNIDADES
 
 # TODO: Crear función kelvin_to_celsius
@@ -21,20 +27,37 @@ def kelvin_to_celsius(kelvin):
 
 # TODO: Aplicar la función a las columnas de las ciudades
 df_celsius = df.copy()
-df_celsius['San Diego'] = df_celsius['San Diego'].apply(kelvin_to_celsius)
-df_celsius['Phoenix'] = df_celsius['Phoenix'].apply(kelvin_to_celsius)
-df_celsius['Toronto'] = df_celsius['Toronto'].apply(kelvin_to_celsius)
+
+# Aplicar conversión a cada columna de ciudad
+# Asumiendo que las columnas son 'San Diego', 'Phoenix', 'Toronto' basado en las instrucciones
+ciudades = ['San Diego', 'Phoenix', 'Toronto']
+for ciudad in ciudades:
+    if ciudad in df_celsius.columns:
+        df_celsius[ciudad] = df_celsius[ciudad].apply(kelvin_to_celsius)
+    else:
+        print(f"Advertencia: Columna '{ciudad}' no encontrada")
 
 # 2. ANÁLISIS DE DATOS (PHOENIX)
+
+# Encontrar el nombre correcto de la columna de fecha
+# Buscar columnas que contengan 'date' o 'time' (case insensitive)
+date_columns = [col for col in df.columns if 'date' in col.lower() or 'time' in col.lower()]
+if date_columns:
+    fecha_col = date_columns[0]
+    print(f"Usando columna de fecha: '{fecha_col}'")
+else:
+    # Si no encontramos, usar la primera columna que no sea una ciudad
+    fecha_col = [col for col in df.columns if col not in ciudades][0]
+    print(f"Usando columna: '{fecha_col}' como fecha")
 
 # TODO: Encontrar temperatura mínima y máxima
 temp_min_idx = df_celsius['Phoenix'].idxmin()
 temp_max_idx = df_celsius['Phoenix'].idxmax()
 
-fecha_hora_min = df_celsius.loc[temp_min_idx, 'Date Time']
+fecha_hora_min = df_celsius.loc[temp_min_idx, fecha_col]
 temp_min = round(df_celsius.loc[temp_min_idx, 'Phoenix'], 2)
 
-fecha_hora_max = df_celsius.loc[temp_max_idx, 'Date Time']
+fecha_hora_max = df_celsius.loc[temp_max_idx, fecha_col]
 temp_max = round(df_celsius.loc[temp_max_idx, 'Phoenix'], 2)
 
 # TODO: Calcular temperatura promedio
@@ -76,6 +99,5 @@ plt.show()
 df_celsius.to_csv('data_celsius.csv', index=False)
 
 print("\n Proceso completado exitosamente!")
-print(f"Gráfica guardada como: temperatura_phoenix_2016.png")
-print(f"Datos exportados como: data_celsius.csv")
-
+print(f" Gráfica guardada como: temperatura_phoenix_2016.png")
+print(f" Datos exportados como: data_celsius.csv")
