@@ -13,23 +13,50 @@ def kelvin_to_celsius(kelvin):
 
 # Crear nuevo DataFrame con las temperaturas convertidas
 df_celsius = df.copy()
-df_celsius['San Diego'] = df_celsius['San Diego'].apply(kelvin_to_celsius)
-df_celsius['Phoenix'] = df_celsius['Phoenix'].apply(kelvin_to_celsius)
-df_celsius['Toronto'] = df_celsius['Toronto'].apply(kelvin_to_celsius)
+
+# Identificar columnas automáticamente
+# Buscar columnas que parezcan ser de temperatura (nombres de ciudades)
+temperature_columns = []
+date_column = None
+
+for col in df.columns:
+    col_lower = col.lower()
+    # Buscar columnas de temperatura
+    if any(city in col_lower for city in ['san diego', 'phoenix', 'toronto', 'temp']):
+        temperature_columns.append(col)
+        df_celsius[col] = df_celsius[col].apply(kelvin_to_celsius)
+    # Buscar columna de fecha/hora
+    elif any(time_keyword in col_lower for time_keyword in ['date', 'time', 'timestamp']):
+        date_column = col
+
+# Si no encontramos columna de fecha, usar el índice
+if date_column is None:
+    date_column = df.columns[0]  # Usar primera columna como fallback
+
+# Asegurarnos de que Phoenix esté en las columnas de temperatura
+phoenix_col = None
+for col in temperature_columns:
+    if 'phoenix' in col.lower():
+        phoenix_col = col
+        break
+
+if phoenix_col is None:
+    # Si no encontramos Phoenix, usar la segunda columna (asumiendo estructura)
+    phoenix_col = df.columns[1] if len(df.columns) > 1 else df.columns[0]
 
 # TODO 2: Análisis de Datos (Phoenix)
 # Encontrar temperatura mínima y su fecha/hora
-min_temp_idx = df_celsius['Phoenix'].idxmin()
-min_temp_date = df_celsius.loc[min_temp_idx, 'Date Time']
-min_temp_value = round(df_celsius.loc[min_temp_idx, 'Phoenix'], 2)
+min_temp_idx = df_celsius[phoenix_col].idxmin()
+min_temp_date = df_celsius.loc[min_temp_idx, date_column]
+min_temp_value = round(df_celsius.loc[min_temp_idx, phoenix_col], 2)
 
 # Encontrar temperatura máxima y su fecha/hora
-max_temp_idx = df_celsius['Phoenix'].idxmax()
-max_temp_date = df_celsius.loc[max_temp_idx, 'Date Time']
-max_temp_value = round(df_celsius.loc[max_temp_idx, 'Phoenix'], 2)
+max_temp_idx = df_celsius[phoenix_col].idxmax()
+max_temp_date = df_celsius.loc[max_temp_idx, date_column]
+max_temp_value = round(df_celsius.loc[max_temp_idx, phoenix_col], 2)
 
 # Calcular temperatura promedio
-avg_temp = round(df_celsius['Phoenix'].mean(), 2)
+avg_temp = round(df_celsius[phoenix_col].mean(), 2)
 
 # Imprimir resultados
 print(f"¿Qué día y a que hora se registró la temperatura mínima en Phoenix durante 2016?")
@@ -49,7 +76,7 @@ print(f"La temperatura promedio durante 2016 en Phoenix fue de: {avg_temp} °C")
 
 # TODO 3: Visualización
 plt.figure(figsize=(12, 6))
-plt.scatter(df_celsius.index, df_celsius['Phoenix'], alpha=0.6, s=10)
+plt.scatter(df_celsius.index, df_celsius[phoenix_col], alpha=0.6, s=10)
 plt.title('Variación de Temperatura en Phoenix durante 2016')
 plt.xlabel('Registros (tiempo)')
 plt.ylabel('Temperatura (°C)')
@@ -61,6 +88,6 @@ plt.close()
 # TODO 4: Exportación
 df_celsius.to_csv('data_celsius.csv', index=False)
 
-print("\n Proceso completado exitosamente!")
+print("\nProceso completado exitosamente!")
 print("Gráfico guardado como: temperatura_phoenix_2016.png")
 print("Datos exportados como: data_celsius.csv")
